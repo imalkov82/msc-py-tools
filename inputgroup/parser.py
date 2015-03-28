@@ -1,7 +1,7 @@
 __author__ = 'imalkov'
 
 
-from toporule import topo_parse
+from toporule import tp_parse
 
 def gen_parse(path):
     res = []
@@ -12,4 +12,4 @@ def gen_parse(path):
         res = filter(lambda line: False if (len(line) == 0 or line[0] in ['$', '\n']) else True, res)
         res = map(lambda line: line.split('$')[0].strip(), res)
     # return res
-    return topo_parse(res)
+    return tp_parse(res)
