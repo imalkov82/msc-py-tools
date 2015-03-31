@@ -4,25 +4,27 @@ import os
 from os.path import split
 import subprocess
 from argparse import ArgumentParser
-from parser import gen_parse
+from toporule import topo_parser
+from faultrule import fault_parser
+from random import randint
 
 def collect_tffs(top, name):
     arr = []
-    for dirpath, dirname, filename in os.walk(top):
+    for dirpath, dirname, filename in os.walk(top, followlinks=True):
         if name in filename:
             arr.append(os.path.join(dirpath, name))
     return arr
 
 
-def collect_to_dict(top_info):
-    topo_dict = {}
-    for el, path in topo_info:
+def collect_to_dict(tup_arr):
+    loc_dict = {}
+    for el, path in tup_arr:
         arr = []
-        if el in topo_dict:
-            arr = topo_dict[el]
+        if el in loc_dict:
+            arr = loc_dict[el]
         arr.append(path)
-        topo_dict[el] = arr
-    return topo_dict
+        loc_dict[el] = arr
+    return loc_dict
 
 class ProgressObserver:
     def __init__(self, dir_creator):
@@ -48,16 +50,14 @@ class DirCreator:
         for observer in self.observers:
             observer()
 
-
-    #TODO: make call be generic
-    def __call__(self, merged, out_path):
+    def __call__(self, merged, out_path, fldr_name):
         self.dtnow = 0.0
         self.lotlen = reduce(lambda a,b: a+b, [len(i) for i in merged.values()])
         i = 0
         for key, group in merged.items():
             i += 1
             self._update_observers()
-            dpath = os.path.join(out_path, "TOPO_TYPE{0}".format(i))
+            dpath = os.path.join(out_path, "{0}_TYPE{1}".format(fldr_name, i))
             os.mkdir(dpath)
             for loc_dir, name in group:
                 self.dtnow +=1
@@ -83,14 +83,15 @@ class GroupByTemplate:
         flt_mrg = {k: self.filter_rule(g) for k, g in merged.items()}
         return {k: self.schema_rule(g) for k, g in flt_mrg.items()}
 
-if __name__ == "__main__":
+def main():
     parser = ArgumentParser()
     #set rules
     parser.add_argument( "-f", action="store_true", dest="fault_act", help="group by fault_parameters.txt", default=False)
     parser.add_argument( "-t", action="store_true", dest="topo_act", help="group by topo_parameters.txt", default=False)
     parser.add_argument( "-d", action="store", dest="dirpath", help="directory full path")
     parser.add_argument( "-o", dest="outpath", help="output directory full path", default=os.getenv("HOME"))
-    parser.add_argument( "-tpr", dest="topo_pref_rule", help="topography prefix remove rule", default=os.getenv("HOME"))
+    parser.add_argument( "-rp", dest="topo_pref_rule", help="topography prefix remove rule", default=os.getenv("HOME"))
+    parser.add_argument("-p", action="store_true", dest="groups_print", help="print the groupby instead dir creation", default=False)
     #get arguments
     kvargs = parser.parse_args()
 
@@ -103,30 +104,50 @@ if __name__ == "__main__":
         raise IOError("missing {0}".format(dirpath))
 
     if kvargs.topo_act is True:
-        print  "fault_act"
+        print  "handle topo parameter input"
         topo_outpath = os.path.join(kvargs.outpath, "TOPO_{0}".format(os.getppid()))
 
         if not os.path.isdir(topo_outpath):
             os.mkdir(topo_outpath)
 
         topo_fls = collect_tffs(dirpath, 'topo_parameters.txt')
-        topo_fls = map(lambda mpath: (gen_parse(mpath), mpath), topo_fls)
+        topo_fls = map(lambda mpath: (topo_parser(mpath), mpath), topo_fls)
 
         topo_fls = filter(lambda (el, path):  el is not None and el is not '', topo_fls)
         topo_info = filter(lambda (el, path):  el[6:9] in ['Nil' ,'tf,'], topo_fls)
 
         td = collect_to_dict(topo_info)
-
-        #'/home/imalkov/Documents/UNIVERSITY/BIGiDATA/'
         template = GroupByTemplate(item_rm_rule, name_rule_factory(prefix_rule=kvargs.topo_pref_rule))
+        td = template(td)
+
+        if kvargs.groups_print is False:
+            dir_creator = DirCreator()
+            dir_creator.attach(ProgressObserver(dir_creator))
+            dir_creator(td, topo_outpath, 'TOPO')
+        else:
+            for k, g in td.items():
+                print k, ' ', [i for (i,j) in g]
+
+    if kvargs.fault_act is True:
+        print  "fault_act"
+
+        fault_outpath = kvargs.outpath
+        # fault_outpath = os.path.join(kvargs.outpath, "FAULT_{0}_{1}".format(os.getppid(),randint(0,os.getppid())))
+
+        if not os.path.isdir(fault_outpath):
+            os.mkdir(fault_outpath)
+
+        fault_fls = collect_tffs(dirpath, 'fault_parameters.txt')
+        fault_fls = map(lambda mpath: (fault_parser(mpath), mpath), fault_fls)
+
+        fd = collect_to_dict(fault_fls)
+
+        template = GroupByTemplate(lambda x: x, name_rule_factory(prefix_rule=kvargs.outpath))
 
         dir_creator = DirCreator()
         dir_creator.attach(ProgressObserver(dir_creator))
 
-        dir_creator(template(td), topo_outpath)
+        dir_creator(template(fd), fault_outpath, 'FAULT')
 
-
-    if kvargs.fault_act is True:
-        print  "fault_act"
-        fault_outpath = os.path.join(kvargs.outpath, "FAULT_{0}".format(os.getppid()))
-        pass
+if __name__ == "__main__":
+    main()
