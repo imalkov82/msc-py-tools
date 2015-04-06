@@ -143,11 +143,15 @@ def main():
         fd = collect_to_dict(fault_fls)
 
         template = GroupByTemplate(lambda x: x, name_rule_factory(prefix_rule=kvargs.outpath))
+        fd = template(fd)
 
-        dir_creator = DirCreator()
-        dir_creator.attach(ProgressObserver(dir_creator))
-
-        dir_creator(template(fd), fault_outpath, 'FAULT')
+        if kvargs.groups_print is False:
+            dir_creator = DirCreator()
+            dir_creator.attach(ProgressObserver(dir_creator))
+            dir_creator(fd, fault_outpath, 'FAULT')
+        else:
+            for k, g in fd.items():
+                print k, ' ', [i for (i,j) in g]
 
 if __name__ == "__main__":
     main()
