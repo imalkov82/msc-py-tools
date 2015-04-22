@@ -82,4 +82,6 @@ s4 = Series(topoprms[split_p3:split_p4], index= ['rhoc', 'rhom', 'young', 'poiss
 s5 = Series(topoprms[split_p4:-1], index=['crustal_thickness', 'nz', 'diffusivity', 'tmax', 'tmsl', 'tlapse', 'heatproduction'])
 s6 = Series([topoprms[-1]], index=['obsfile'])
 
-print pandas.concat([s1,s2, s3, s4, s5, s6])
+s16 = pandas.concat([s1,s2, s3, s4, s5, s6])
+print s16
+print df1
