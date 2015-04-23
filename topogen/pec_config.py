@@ -4,18 +4,25 @@ import pandas as pd
 from inputgroup.toporule import topo_parser
 import os
 
-data = {'step0':    [0,     0,      0,      0,      0,      0],
-        'step1':    [2000,  3000,   3000,   0,   1000,   1500],
-        'step2':    [5000,  6000,   7000,   0,   2000,   3500],
-        'row_num':  [453,   453,    453,    453,    453,    453],
-        'col_num':  [808,   808,    808,    808,    808,    808],
+data = {'step0':    [0,     0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0],
+        'step1':    [2000,  3000,   3000,   0,   1000,      1500,   2000,   3000,   3000,   2000,   3000,   3000],
+        'step2':    [5000,  6000,   7000,   0,   2000,      3500,   5000,   6000,   7000,   5000,   6000,   7000],
+        'row_num':  [453,   453,    453,    453,    453,    453,    453,    453,    453,    453,    453,    453],
+        'col_num':  [808,   808,    808,    808,    808,    808,    808,    808,    808,    808,    808,    808],
         'execution_directory': [
                     '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1A/',
                     '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1B/',
                     '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1C/',
                     '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1D/',
                     '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1E/',
-                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1F/']
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1F/',
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session2A/',
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session2B/',
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session2C/',
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE03/Session1A/',
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE03/Session1B/',
+                    '~/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE03/Session1C/'
+                    ]
         }
 
 topo_data = pd.DataFrame(data)
@@ -36,6 +43,18 @@ indxs = [
     'zl', 'nz', 'k', 'tb', 'tt', 'la', 'pr',
     'agefnme',
     'file_dir']
+
+
+failt_2_2 = [
+'nfault',
+'x1','y1','x2','y2',
+'n_0',
+'ri_0','si_0',
+'ri_1','si_1',
+'nstep_0',
+'tstart_0','tend_0','velo_0',
+'nstep_1',
+'tstart_1','tend_1','velo_1']
 
 # homedir = '{0}/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/'.format(os.environ['HOME'])
 #
