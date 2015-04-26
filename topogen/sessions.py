@@ -7,18 +7,33 @@ from pec_config import topo_data
 import os
 import shutil
 import datetime
+import pandas as pnd
+import  matplotlib.pylab as plt
 
-def surf_generator(mrow, mcol):
+def surfgen_factory(mrow, mcol):
     fylocation = mcol/2
-    def foo(fw_maxh, f):
+    def surf_generator(fw_maxh, f):
         st2 = f(mrow,fylocation,lambda xi,yi: 101 * np.tan(np.deg2rad(60)) * yi)
         st2 = np.concatenate((np.zeros(st2.shape),st2),axis=0)
         st2[st2 > fw_maxh] = fw_maxh # footwall maximum height
         return st2
-    return foo
+    return surf_generator
 
-
-col,row = topo_data.shape
+def surfcyn_gen_factory(mrow, mcol):
+    fylocation = mcol/2
+    cynlocation = mrow / 2 # canyon location
+    def surfcyn_gen(fw_max, f):
+        zl = genMGSurfe(cynlocation, fylocation, lambda xi,yi: 101 * np.tan(np.deg2rad(30)) * xi + 101 * np.tan(np.deg2rad(0)) * yi)
+        z = np.concatenate((np.fliplr(zl),zl),axis=1)
+        z = np.hstack((z,np.zeros((z.shape[0],1))+fw_max)) #add column
+        #escarpment
+        st2 = genMGSurfe(mrow,fylocation,lambda xi,yi: 101 * np.tan(np.deg2rad(60)) * yi)
+        #final topography
+        st2[z<st2] = z[z<st2]
+        st2 = np.concatenate((np.zeros(st2.shape),st2),axis=0)
+        st2[st2 > fw_max] = fw_max # footwall maximum height (4 km = 4000 m)
+        return st2
+    return surfcyn_gen
 
 def create_bindir(path, symlinkdir):
     bin_path = os.path.join(path,'bin')
@@ -51,6 +66,17 @@ def create_vtkdir(path):
         os.popen('mv {0} {1}'.format(vtk_path, 'VTK_'+ (datetime.datetime.now().isoformat()).replace(':','_')))
     os.mkdir(vtk_path)
 
+
+def read_plot_trend_csv(fpath):
+    df1 = pnd.read_csv(fpath)
+    b = df1[(df1['Points:2'] > min(df1['Points:2'])) & (df1['Points:2'] < max(df1['Points:2'])) ]
+    b.plot(x='ApatiteHeAge', y='Points:2', style='o-r')
+    # calc the trendline (it is simply a linear fitting)
+    z = numpy.polyfit(b['ApatiteHeAge'],b['Points:2'], 1)
+    p = numpy.poly1d(z)
+    # the line equation:
+    print 'y=%.6fx+(%.6f)'%(z[0],z[1])
+
 def gen_env(rootpath, binpath):
     try:
         create_bindir(rootpath, binpath)
@@ -61,8 +87,10 @@ def gen_env(rootpath, binpath):
     except Exception, e:
         print "fail to create dir: msg {0}".format(e.message)
 
+col, _ = topo_data.shape
 
-for i in xrange(3, row):
+
+for i in xrange(9, col):
     #cteate environment
     s = topo_data.ix[i]
     rootpath = s['execution_directory'].replace('~', os.environ['HOME'])
@@ -70,10 +98,11 @@ for i in xrange(3, row):
     if os.path.isdir(rootpath) is False:
         os.mkdir(rootpath)
 
-    # gen_env(rootpath,'')
+    gen_env(rootpath,binpath = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1A/bin/')
 
     s = topo_data.ix[i]
-    zs_func = surf_generator(s['row_num'],s['col_num'])
+    zs_func = surfcyn_gen_factory(s['row_num'],s['col_num'])
+    # zs_func = surfgen_factory(s['row_num'],s['col_num'])
     dir_surfs = [zs_func(s['step{0}'.format(j)] * np.sin(np.deg2rad(60)), genMGSurfe) for j in xrange(3)]
     data_path = os.path.join(rootpath, 'data')
     for k, zs in enumerate(dir_surfs):
