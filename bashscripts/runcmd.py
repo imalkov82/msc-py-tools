@@ -6,30 +6,30 @@ __author__ = 'imalkov'
 # for bpath in [os.path.join(execdir, el) for el in os.listdir(execdir)]:
 #     print bpath
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import socket
 
-def send_mail():
-    hostname = socket.gethostname()
-    mailing_list = ['igor.malkov82@gmail.com']
-
-    msg = MIMEMultipart()
-    msg['Subject'] = "Pecube Status"
-    msg['From'] = 'generate-sample@' + hostname
-    msg['To'] = ",".join(mailing_list)
-    body = 'Success ' + "<br>"
-    part = MIMEText(body,'html')
-    msg.attach(part)
-    smtp_host = 'localhost'
-
+def send_mail(body):
+    sender = "malkov@bgu.ac.il"
+    receivers = ["igor.malkov82@gmail.com"]
+    yourname = "Igor Malkov"
+    recvname = "Igor Malkov"
+    sub = "Testing email"
+    message = "From: " + yourname + "\n"
+    message = message + "To: " + recvname + "\n"
+    message = message + "Subject: " + sub + "\n"
+    message = message + body
     try:
-        s = smtplib.SMTP(smtp_host)
-        s.sendmail('malkov@post.bgu.ac.il', mailing_list, msg.as_string())
-    except Exception, e:
-        raise e
-    finally:
-        s.quit()
+        print "Sending email to " + recvname + "...",
+        server = smtplib.SMTP(host='smtp.gmail.com', port=587)
+        username = 'igor.malkov82@gmail.com'
+        password = 'itgooRr2'
+        server.ehlo()
+        server.starttls()
+        server.login(username,password)
+        server.sendmail(sender, receivers, message)
+        server.quit()
+        print "successfully sent!"
+    except  Exception:
+        print "Error: unable to send email"
 
 def runcmd(cmd):
     import sys, os
@@ -45,3 +45,18 @@ def runcmd(cmd):
         else:
             break
     return s
+
+
+# send_mail()
+import logging
+import os
+
+fname = '{0}/Dropbox/M.s/Research/DATA/SESSION_TREE/log.dat'.format(os.environ['HOME'])
+logging.basicConfig(filename=fname,level=logging.DEBUG)
+logging.info('start logger')
+
+logging.error()
+# exec_dir = '{0}/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02'.format(os.environ['HOME'])
+#
+# for bpath in [os.path.join(exec_dir, d) for d in ['Session1D', 'Session1E', 'Session1F', 'Session2A', 'Session2B', 'Session2C']]:
+#     print bpath

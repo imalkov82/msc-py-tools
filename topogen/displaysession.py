@@ -5,6 +5,7 @@ import matplotlib.pylab as plt
 import collections
 import os
 import sys
+import pandas as pnd
 
 cmap = {
         30:'b',
@@ -21,11 +22,6 @@ fmap = {}
 def mapDistToXY(XInd, YInd, DInd, fname, d, cont_x = lambda x,y: x, cont_y = lambda x,y: y):
     ''' Read pair of columns as value in dictionary and map it (the pair) to key value
         where on every element in pair continuation is applied.
-
-        Input:
-
-        Output:
-
     '''
     try:
     #map index
@@ -49,10 +45,6 @@ def mapDistToXY(XInd, YInd, DInd, fname, d, cont_x = lambda x,y: x, cont_y = lam
 
 def recPlotDict(key,val,ax,ppat = '-'):
     '''
-    Input:
-
-    Output:
-
     '''
     #base
     global fmap
@@ -66,7 +58,6 @@ def recPlotDict(key,val,ax,ppat = '-'):
             ax.plot(x,y,ppat + cmap[key])
     elif type(x) == tuple and type(y) == tuple:
         recPlotDict(key,x,ax,ppat); recPlotDict(key,y,ax,ppat)
-
     else:
         print "TUPLE ERROR"
         exit()
@@ -75,10 +66,6 @@ def recPlotDict(key,val,ax,ppat = '-'):
 
 def PlotDict(d,ppat = '-'):
     '''
-        Input:
-
-        Output:
-
     '''
     #set fmap
     global fmap
@@ -113,17 +100,17 @@ def MngPlot(ax,xlbl,ylbl,tlt):
 
     return
 
-csvdir = '/home/imalkov/Documents/Session1/Session1A/CSV/'
-if os.path.exists(csvdir) is False:
-    sys.exit()
-
-Iso50cProfiles = 'Iso50cProfiles'
-ext = '.csv'
-d = {}
-
-for i in range(6):
-    fname = csvdir + Iso50cProfiles + str(i) + ext
-    mapDistToXY(6, 9, 8, fname, d)
-
-ax,fig = PlotDict(d)
-MngPlot(ax,'Block Length [km]','Isotherma Depth [km]','Isotherma 50c')
+# csvdir = '/home/imalkov/Documents/Session1/Session1A/CSV/'
+# if os.path.exists(csvdir) is False:
+#     sys.exit()
+#
+# Iso50cProfiles = 'Iso50cProfiles'
+# ext = '.csv'
+# d = {}
+#
+# for i in range(6):
+#     fname = csvdir + Iso50cProfiles + str(i) + ext
+#     mapDistToXY(6, 9, 8, fname, d)
+#
+# ax,fig = PlotDict(d)
+# MngPlot(ax,'Block Length [km]','Isotherma Depth [km]','Isotherma 50c')

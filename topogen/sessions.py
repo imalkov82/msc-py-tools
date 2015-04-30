@@ -9,6 +9,7 @@ import shutil
 import datetime
 import pandas as pnd
 import  matplotlib.pylab as plt
+import numpy
 
 def surfgen_factory(mrow, mcol):
     fylocation = mcol/2
@@ -87,23 +88,55 @@ def gen_env(rootpath, binpath):
     except Exception, e:
         print "fail to create dir: msg {0}".format(e.message)
 
-col, _ = topo_data.shape
+
+#--------------- topo generation -----------------------------------
+# col, _ = topo_data.shape
+#
+#
+# for i in xrange(9, col):
+#     #cteate environment
+#     s = topo_data.ix[i]
+#     rootpath = s['execution_directory'].replace('~', os.environ['HOME'])
+#     print  'execute path = {0}'.format(rootpath)
+#     if os.path.isdir(rootpath) is False:
+#         os.mkdir(rootpath)
+#
+#     gen_env(rootpath,binpath = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1A/bin/')
+#
+#     s = topo_data.ix[i]
+#     zs_func = surfcyn_gen_factory(s['row_num'],s['col_num'])
+#     # zs_func = surfgen_factory(s['row_num'],s['col_num'])
+#     dir_surfs = [zs_func(s['step{0}'.format(j)] * np.sin(np.deg2rad(60)), genMGSurfe) for j in xrange(3)]
+#     data_path = os.path.join(rootpath, 'data')
+#     for k, zs in enumerate(dir_surfs):
+#         writeToTopofname(zs,os.path.join(data_path,'step{0}.txt'.format(k)))
+# --------------------------- SEND BOX ---------------------------------------------------------------------
 
 
-for i in xrange(9, col):
-    #cteate environment
-    s = topo_data.ix[i]
-    rootpath = s['execution_directory'].replace('~', os.environ['HOME'])
-    print  'execute path = {0}'.format(rootpath)
-    if os.path.isdir(rootpath) is False:
-        os.mkdir(rootpath)
+frame1 = pnd.read_csv('/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1C/csv/Age-Elevation.csv', usecols = ['ApatiteHeAge','Points:2'])
 
-    gen_env(rootpath,binpath = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1A/bin/')
+fd = frame1[(frame1['Points:2'] < max(frame1['Points:2']))
+             & (frame1['Points:2'] > min(frame1['Points:2']))]
 
-    s = topo_data.ix[i]
-    zs_func = surfcyn_gen_factory(s['row_num'],s['col_num'])
-    # zs_func = surfgen_factory(s['row_num'],s['col_num'])
-    dir_surfs = [zs_func(s['step{0}'.format(j)] * np.sin(np.deg2rad(60)), genMGSurfe) for j in xrange(3)]
-    data_path = os.path.join(rootpath, 'data')
-    for k, zs in enumerate(dir_surfs):
-        writeToTopofname(zs,os.path.join(data_path,'step{0}.txt'.format(k)))
+fd['Elevation'] = fd['Points:2'] - min(frame1['Points:2'])
+
+sup_age = 45
+x = fd[fd['ApatiteHeAge'] < sup_age]['ApatiteHeAge']
+y = fd[fd['ApatiteHeAge'] < sup_age]['Points:2']
+z = numpy.polyfit(x,y, 1)
+p = numpy.poly1d(z)
+print 'y=%.6fx+(%.6f)'%(z[0],z[1])
+# plt.plot(x * z[0], z[1])
+
+#TODO: append treadline to plot
+f = plt.figure()
+ax = fd.plot(x = 'ApatiteHeAge', y = 'Elevation', style = '-o', ax = f.gca())
+plt.title('Age-Elevation')
+plt.xlabel('ApatiteHeAge [Ma]')
+plt.ylabel('Elevation [Km]')
+
+n = numpy.linspace(32,50,10)
+plt.plot(n,p(n)- min(frame1['Points:2']),'-r')
+
+plt.show()
+
