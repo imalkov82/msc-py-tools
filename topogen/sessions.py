@@ -89,8 +89,22 @@ def gen_env(rootpath, binpath):
         print "fail to create dir: msg {0}".format(e.message)
 
 #TODO: find max z
-def find_max_treadline(xdata, ydata, win_size = 4):
-    pass
+def find_max_treadline(data_frame, opt_tread, max_sup_age):
+    pnd_ds = data_frame['ApatiteHeAge']
+    ds = np.array(pnd_ds)
+    max_age = 0
+    min_tol = 1
+    for sup_age in sorted(ds)[1:]:
+        if sup_age >= max_sup_age:
+            break
+        x = data_frame[data_frame['ApatiteHeAge'] < sup_age]['ApatiteHeAge']
+        y = data_frame[data_frame['ApatiteHeAge'] < sup_age]['Points:2']
+        z = numpy.polyfit(x,y,1)
+        if abs(opt_tread - z[0]) < min_tol:
+            min_tol = abs(opt_tread - z[0])
+            max_age = sup_age
+
+    return max_age
 #--------------- topo generation -----------------------------------
 
 # -------------------------
@@ -124,18 +138,24 @@ if fgen_topo is True:
 # --------------------------- SEND BOX ---------------------------------------------------------------------
 
 fdata_limit = True
+to_file = True
+low_lim = 0
+max_sup_age = 40
 
-low_lim = 1.1
-sup_age = 33
+eafile = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE03/Session1C/csv/riverbad/'
+node_loc = eafile.find('NODE') + len('NODE')
+s_loc = eafile.find('csv') - 3
+fig_name = 'n{0}s{1}'.format(eafile[node_loc:node_loc + 2], eafile[s_loc:s_loc + 2])
 
-frame1 = pnd.read_csv('/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session2D/csv/Age-Elevation0.csv', usecols = ['ApatiteHeAge','Points:2'])
+
+frame1 = pnd.read_csv('{0}/Age-Elevation0.csv'.format(eafile), usecols = ['ApatiteHeAge','Points:2'])
 
 fd = frame1[(frame1['Points:2'] < max(frame1['Points:2']))
              & (frame1['Points:2'] > min(frame1['Points:2']) + low_lim)]
 
 fd['Elevation'] = fd['Points:2'] - min(frame1['Points:2'])
 
-
+sup_age = find_max_treadline(fd, 0.1, max_sup_age)
 
 if fdata_limit is True:
     x = fd[fd['ApatiteHeAge'] < sup_age]['ApatiteHeAge']
@@ -151,9 +171,20 @@ plt.xlabel('ApatiteHeAge [Ma]')
 plt.ylabel('Elevation [Km]')
 
 if fdata_limit is True:
-    ax.text(28, 3, 'y=%.6fx + b'%(z[0]), fontsize = 20)
+    ax.text(40, 3, 'y=%.6fx + b'%(z[0]), fontsize = 20)
     n = numpy.linspace(min(frame1[frame1['Points:2'] > min(frame1['Points:2']) + low_lim]['ApatiteHeAge']) ,max(frame1['ApatiteHeAge']),20)
     plt.plot(n,p(n)- min(frame1['Points:2']),'-r')
 
-plt.show()
+if to_file is True:
+    if eafile.find('esc') != -1 :
+        suf = '_esc'
+    elif eafile.find('riv') != -1:
+        suf = '_riv'
+    else:
+        suf = ''
+    ff = '/home/imalkov/Dropbox/M.s/Research/PICTURES/NODE03/AGE-ELEVATION/{0}_ea{1}.pdf'.format(fig_name, suf)
+    print ff
+    plt.savefig(ff)
+else:
+    plt.show()
 
