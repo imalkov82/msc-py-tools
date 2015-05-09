@@ -30,7 +30,7 @@ def save_to_file(tpath):
         for i in ['Points_{0}'.format(25 * (i + 1)) for i in xrange(4)]:
             ax = fs.plot(x = 'arc_length' ,y = i)
             # ds = fs[fs['arc_length']  >= 9.5 & fs['arc_length']  <= 10.5][i]
-            fs = fs.query('arc_length >= 9.5 and arc_length <= 10.5')
+            fs = fs.query('arc_length >= 14 and arc_length <= 17')
             valarr10.append(-1 * fs[i].mean())
     except Exception,e:
         raise e
@@ -56,9 +56,9 @@ def save_to_file(tpath):
 
 
 
-root_path = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/'
+root_path = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE03/'
 
 for i in sorted([root_path + p + '/csv/' for p in os.listdir(root_path)]):
     # save_to_file(os.path.join(i,'escarpment'))
-    # save_to_file(os.path.join(i,'riverbad'))
-    save_to_file(i)
+    save_to_file(os.path.join(i,'riverbad'))
+    # save_to_file(i)
