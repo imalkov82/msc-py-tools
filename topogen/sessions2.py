@@ -15,6 +15,7 @@ def save_to_file(tpath):
     ax = f.gca()
 
     max_height = max(pnd.read_csv('{0}/Age-Elevation0.csv'.format(tpath), usecols = ['Points:2'])['Points:2'])
+    print  'file {0} \n max height: {1}'.format(tpath,max_height)
     for i in xrange(4):
         tmp_df = pnd.read_csv('{0}/Temperature{1}.csv'.format(tpath, i), usecols = ['arc_length','Points:2'])
         tmp_df['Points_{0}'.format(25 * (i + 1))] =  tmp_df['Points:2'] - max_height
