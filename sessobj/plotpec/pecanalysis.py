@@ -6,20 +6,19 @@ import numpy as np
 import matplotlib.pylab as plt
 from argparse import ArgumentParser
 
+
 def df_ea_riv(frame1):
-    # cols = ['ApatiteHeAge','Points:2', 'arc_length']
-    # frame1 = pnd.read_csv('{0}/Age-Elevation0.csv'.format(eafile), usecols = cols)
-    fd = frame1[(frame1['Points:2'] < max(frame1['Points:2']))]
+    fd1 = frame1[frame1['Points:2'] < max(frame1['Points:2'])]
+    fd  = fd1[fd1['ApatiteHeAge'] >= 1]
     s = fd[fd['Points:2'] == min(fd['Points:2'])]['arc_length']
     res_df = fd[fd['arc_length'] >= s[s.index[0]]]
     res_df['Elevation'] = res_df['Points:2'] - min(frame1['Points:2'])
     return res_df
 
-def df_ea_esc(frame1, low_lim = 0):
-    # cols = ['ApatiteHeAge','Points:2']
-    # frame1 = pnd.read_csv('{0}/Age-Elevation0.csv'.format(eafile), usecols = cols)
-    fd = frame1[(frame1['Points:2'] < max(frame1['Points:2']))
-                 & (frame1['Points:2'] > min(frame1['Points:2']) + low_lim)]
+def df_ea_esc(frame1):
+    fd1 = frame1[(frame1['Points:2'] < max(frame1['Points:2']))
+                 & (frame1['Points:2'] > min(frame1['Points:2']))]
+    fd  = fd1[fd1['ApatiteHeAge'] >= 1]
     fd['Elevation'] = fd['Points:2'] - min(frame1['Points:2'])
     return fd
 
@@ -69,7 +68,7 @@ def name_dst_file(fname, dst_path, suf):
 
 def plot_ea(frame1, filt_df, dst_path, uplift_rate):
     f = plt.figure()
-    ax = filt_df.plot(x='ApatiteHeAge', y='Elevation', style ='-', ax=f.gca())
+    ax = filt_df.plot(x='ApatiteHeAge', y='Elevation', style='o-', ax=f.gca())
 
     plt.title('Age-Elevation')
     plt.xlabel('ApatiteHeAge [Ma]')
@@ -82,11 +81,16 @@ def plot_ea(frame1, filt_df, dst_path, uplift_rate):
     z = np.polyfit(x, y, 1)
     p = np.poly1d(z)
 
-    #
     # plt.legend(point_lables, loc='best', fontsize=10)
-    n = np.linspace(min(frame1[frame1['Points:2'] > min(frame1['Points:2'])]['ApatiteHeAge']), max(frame1['ApatiteHeAge']), 21)
+    # n = np.linspace(min(frame1[frame1['Points:2'] > min(frame1['Points:2'])]['ApatiteHeAge']), max(frame1['ApatiteHeAge']), 21)
+    n = np.linspace(min(filt_df[filt_df['Points:2'] >= min(filt_df['Points:2'])]['ApatiteHeAge']), max(filt_df['ApatiteHeAge']), 21)
     plt.plot(n, p(n) - min(frame1['Points:2']),'-r')
     ax.text(np.mean(n), np.mean(p(n) - min(frame1['Points:2'])), 'y=%.6fx + b'%(z[0]), fontsize = 20)
+
+
+    txs = np.linspace(np.round(min(filt_df['Elevation'])), np.ceil(max(filt_df['Elevation'])), 11)
+    lebs = ['0'] + [str(i) for i in txs[1:]]
+    plt.yticks(txs, list(reversed(lebs)))
     plt.savefig(dst_path)
 
 
