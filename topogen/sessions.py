@@ -88,7 +88,6 @@ def gen_env(rootpath, binpath):
     except Exception, e:
         print "fail to create dir: msg {0}".format(e.message)
 
-#TODO: find max z
 def find_max_treadline(data_frame, opt_tread, max_sup_age):
     pnd_ds = data_frame['ApatiteHeAge']
     ds = np.array(pnd_ds)
@@ -105,18 +104,15 @@ def find_max_treadline(data_frame, opt_tread, max_sup_age):
             max_age = sup_age
 
     return max_age
+#-------------------------------------------------------------------
 #--------------- topo generation -----------------------------------
-
-# -------------------------
-# flags
-# -------------------------
+#-------------------------------------------------------------------
 
 fgen_topo = False
 
 if fgen_topo is True:
 
     col, _ = topo_data.shape
-
 
     for i in xrange(9, col):
         #cteate environment
@@ -135,8 +131,9 @@ if fgen_topo is True:
         data_path = os.path.join(rootpath, 'data')
         for k, zs in enumerate(dir_surfs):
             writeToTopofname(zs,os.path.join(data_path,'step{0}.txt'.format(k)))
-# --------------------------- SEND BOX ---------------------------------------------------------------------
-
+#----------------------------------------------------------------------------------------------------------
+# ---------------------------------------------- SEND BOX -------------------------------------------------
+#----------------------------------------------------------------------------------------------------------
 fdata_limit = True
 to_file = True
 low_lim = 0
@@ -155,16 +152,16 @@ fd = frame1[(frame1['Points:2'] < max(frame1['Points:2']))
 
 fd['Elevation'] = fd['Points:2'] - min(frame1['Points:2'])
 
-sup_age = find_max_treadline(fd, 0.1, max_sup_age)
+sup_age = find_max_treadline(fd, 0.1 * np.sin(np.deg2rad(60)), max_sup_age)
 
 if fdata_limit is True:
     x = fd[fd['ApatiteHeAge'] < sup_age]['ApatiteHeAge']
     y = fd[fd['ApatiteHeAge'] < sup_age]['Points:2']
-    z = numpy.polyfit(x,y, 1)
+    z = numpy.polyfit(x, y, 1)
     p = numpy.poly1d(z)
 
 f = plt.figure()
-ax = fd.plot(x = 'ApatiteHeAge', y = 'Elevation', style = '-o', ax = f.gca())
+ax = fd.plot(x='ApatiteHeAge', y='Elevation', style ='-', ax=f.gca())
 
 plt.title('Age-Elevation')
 plt.xlabel('ApatiteHeAge [Ma]')
