@@ -146,7 +146,7 @@ def plot_temperature(src_path, dst_path):
             # mx = [max(fs[i]) for i in v]
             mn = [min(fs[i]) for i in v]
 
-            txs = np.linspace(np.round(min(mn)), 0, 11)
+            txs = np.linspace(-np.ceil(- min(mn)), 0, np.ceil(- min(mn)) + 1)
             lebs = [str(-i) for i in txs[:-1]] + ['0']
             plt.yticks(txs, lebs)
 
