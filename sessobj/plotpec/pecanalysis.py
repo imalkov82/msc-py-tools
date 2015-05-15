@@ -41,30 +41,11 @@ def collect_to_dict(tup_arr):
         loc_dict[el] = arr
     return loc_dict
 
-def temperature_finder(root_dir):
-    arr = []
-    name = 'Temperature'
-    for dirpath, dirname, filename in os.walk(root_dir):
-        for f in filename:
-            if f.find(name) != -1:
-                arr.append((dirpath, f))
-    return collect_to_dict(arr)
-    # res = []
-    # for k , v in collect_to_dict(arr).items():
-    #     res += [os.path.join(k,t) for t in v]
-    # return res
-
 def name_dst_file(fname, dst_path, suf):
     node_loc = fname.find('NODE') + len('NODE')
     s_loc = fname.find('csv') - 3
     pref = 'n{0}s{1}'.format(fname[node_loc:node_loc + 2], fname[s_loc:s_loc + 2])
     return '{0}{1}'.format(os.path.join(dst_path,pref), suf)
-
-# def get_yticks(min, max):
-#     txs = np.linspace(np.round(min), np.ceil(max), 11)
-#     lebs = ['0'] + [str(i) for i in txs[1:]]
-#     lebs.reverse()
-#     return txs, lebs
 
 def plot_ea(frame1, filt_df, dst_path, uplift_rate):
     f = plt.figure()
@@ -87,7 +68,6 @@ def plot_ea(frame1, filt_df, dst_path, uplift_rate):
     plt.plot(n, p(n) - min(frame1['Points:2']),'-r')
     ax.text(np.mean(n), np.mean(p(n) - min(frame1['Points:2'])), 'y=%.6fx + b'%(z[0]), fontsize = 20)
 
-
     txs = np.linspace(np.round(min(filt_df['Elevation'])), np.ceil(max(filt_df['Elevation'])), 11)
     lebs = ['0'] + [str(i) for i in txs[1:]]
     plt.yticks(txs, list(reversed(lebs)))
@@ -100,8 +80,6 @@ def find_max_treadline(data_frame, opt_tread):
     max_age = 0
     min_tol = 1
     for sup_age in sorted(ds)[1:]:
-        # if sup_age >= max_sup_age:
-        #     break
         x = data_frame[data_frame['ApatiteHeAge'] < sup_age]['ApatiteHeAge']
         y = data_frame[data_frame['ApatiteHeAge'] < sup_age]['Points:2']
         z = np.polyfit(x, y, 1)
@@ -130,15 +108,69 @@ def plot_age_elevation(src_path, dst_path):
         except Exception, e:
             print 'error in file={0}, error msg = {1}'.format(ea, e.message)
 
+############### TEMPERATURE ###################################################
+def temperature_finder(root_dir):
+    arr = []
+    name = 'Temperature'
+    for dirpath, dirname, filename in os.walk(root_dir):
+        for f in filename:
+            if f.find(name) != -1:
+                arr.append((dirpath, f))
+    return collect_to_dict(arr)
+
+def temperature_from_files(k, v , on_point_func = lambda x : x):
+    res = []
+    for i,t in enumerate(v):
+        tmp_df = pnd.read_csv(os.path.join(k,t), usecols = ['arc_length','Points:2'])
+        tmp_df[t] = on_point_func(tmp_df['Points:2'])
+        tmp_df.drop('Points:2', axis= 1 , inplace= True)
+        res.append(tmp_df)
+    return reduce(lambda f1, f2: pnd.merge(f1, f2, on='arc_length', how='outer'), res)
+
+def plot_temperature(src_path, dst_path):
+    for k,v in temperature_finder(src_path).items():
+        print k
+        max_high = max(pnd.read_csv('{0}/Age-Elevation0.csv'.format(k), usecols=['Points:2'])['Points:2'])
+        fs = temperature_from_files(k, v, on_point_func=lambda x:  x - max_high)
+
+        f = plt.figure()
+        ax = f.gca()
+        try:
+            for tv in v:
+                ax = fs.plot(x='arc_length', y=tv, ax=ax)
+            plt.title('BLOCK GEOTHREMA', fontsize = 12)
+            plt.legend(list(reversed(["{0}C".format((int((os.path.splitext(t)[0])[-1]) + 1) * 25) for i,t in enumerate(v)])), loc='best', fontsize=10)
+            plt.xlabel('Length [km]')
+            plt.ylabel('Depth [Km]')
+
+            # mx = [max(fs[i]) for i in v]
+            mn = [min(fs[i]) for i in v]
+
+            txs = np.linspace(np.round(min(mn)), 0, 11)
+            lebs = [str(-i) for i in txs[:-1]] + ['0']
+            plt.yticks(txs, lebs)
+
+            if k.find('riv') != -1:
+                pic_name = name_dst_file(k, dst_path, '_riv_geot.png')
+            else:
+                pic_name = name_dst_file(k, dst_path, '_esc_geot.png')
+
+            plt.savefig(pic_name)
+        except Exception, e:
+            print 'error in file={0}, error msg = {1}'.format(v, e.message)
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     #set rules
     parser.add_argument( "-src", dest="soure_path", help="source directory")
     parser.add_argument( "-dst", dest="dest_path", help="destination directory")
+    parser.add_argument( "-a", action="store_true", dest="aeflag", help="age elevation plot", default=False)
+    parser.add_argument( "-t", action="store_true", dest="tflag", help="temperature plot", default=False)
 
     kvargs = parser.parse_args()
-
-    plot_age_elevation(kvargs.soure_path, kvargs.dest_path)
-
-# src_path = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/'
-# dst_path = '/home/imalkov/Dropbox/M.s/Research/PICTURES/AGE-ELEVATION/'
+    if kvargs.aeflag is True:
+        print "Age Elevation plot"
+        plot_age_elevation(kvargs.soure_path, kvargs.dest_path)
+    if kvargs.tflag is True:
+        print "Geotherma plot"
+        plot_temperature(kvargs.soure_path, kvargs.dest_path)
