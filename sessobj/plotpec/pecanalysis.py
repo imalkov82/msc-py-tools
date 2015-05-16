@@ -11,7 +11,7 @@ def df_ea_riv(frame1):
     fd1 = frame1[frame1['Points:2'] < max(frame1['Points:2'])]
     fd  = fd1[fd1['ApatiteHeAge'] >= 1]
     s = fd[fd['Points:2'] == min(fd['Points:2'])]['arc_length']
-    res_df = fd[fd['arc_length'] >= s[s.index[0]]]
+    res_df = fd[fd['arc_length'] >= s[s.index[:]].mean()]
     res_df['Elevation'] = res_df['Points:2'] - min(frame1['Points:2'])
     return res_df
 
@@ -109,6 +109,16 @@ def plot_age_elevation(src_path, dst_path):
             print 'error in file={0}, error msg = {1}'.format(ea, e.message)
 
 ############### TEMPERATURE ###################################################
+def print_mean(fs, col_name_arr):
+    res = []
+    for tn in col_name_arr:
+        s = fs[fs[tn] == min(fs[tn])]['arc_length']
+        sm = s[s.index[:]].mean()
+        res_fs = fs[(fs['arc_length'] >= (sm - abs(sm * 0.1))) & (fs['arc_length'] < (sm + abs(sm * 0.1)))]
+        res.append(-1 * res_fs[tn].mean())
+    return res
+
+
 def temperature_finder(root_dir):
     arr = []
     name = 'Temperature'
@@ -127,7 +137,7 @@ def temperature_from_files(k, v , on_point_func = lambda x : x):
         res.append(tmp_df)
     return reduce(lambda f1, f2: pnd.merge(f1, f2, on='arc_length', how='outer'), res)
 
-def plot_temperature(src_path, dst_path):
+def plot_temperature(src_path, dst_path, mean_flag):
     for k,v in temperature_finder(src_path).items():
         print k
         max_high = max(pnd.read_csv('{0}/Age-Elevation0.csv'.format(k), usecols=['Points:2'])['Points:2'])
@@ -136,16 +146,16 @@ def plot_temperature(src_path, dst_path):
         f = plt.figure()
         ax = f.gca()
         try:
-            for tv in v:
-                ax = fs.plot(x='arc_length', y=tv, ax=ax)
+            for tn in v:
+                ax = fs.plot(x='arc_length', y=tn, ax=ax)
+
+            leg_list = list(reversed(["{0}C".format((int((os.path.splitext(t)[0])[-1]) + 1) * 25) for i,t in enumerate(v)]))
             plt.title('BLOCK GEOTHREMA', fontsize = 12)
-            plt.legend(list(reversed(["{0}C".format((int((os.path.splitext(t)[0])[-1]) + 1) * 25) for i,t in enumerate(v)])), loc='best', fontsize=10)
+            plt.legend(leg_list , loc='best', fontsize=10)
             plt.xlabel('Length [km]')
             plt.ylabel('Depth [Km]')
 
-            # mx = [max(fs[i]) for i in v]
             mn = [min(fs[i]) for i in v]
-
             txs = np.linspace(-np.ceil(- min(mn)), 0, np.ceil(- min(mn)) + 1)
             lebs = [str(-i) for i in txs[:-1]] + ['0']
             plt.yticks(txs, lebs)
@@ -155,7 +165,13 @@ def plot_temperature(src_path, dst_path):
             else:
                 pic_name = name_dst_file(k, dst_path, '_esc_geot.png')
 
-            plt.savefig(pic_name)
+            # plt.savefig(pic_name)
+
+            if mean_flag is True and k.find('riv') != -1:
+                tl = ['{0}={1}'.format(tt,vv) for tt, vv in zip(leg_list, print_mean(fs, v))]
+                print '\t{0}: {1}'.format(os.path.split(pic_name)[1],','.join(list(reversed(tl))))
+
+
         except Exception, e:
             print 'error in file={0}, error msg = {1}'.format(v, e.message)
 
@@ -166,6 +182,7 @@ if __name__ == '__main__':
     parser.add_argument( "-dst", dest="dest_path", help="destination directory")
     parser.add_argument( "-a", action="store_true", dest="aeflag", help="age elevation plot", default=False)
     parser.add_argument( "-t", action="store_true", dest="tflag", help="temperature plot", default=False)
+    parser.add_argument( "-tm", action="store_true", dest="tmean", help="temperature mean", default=False)
 
     kvargs = parser.parse_args()
     if kvargs.aeflag is True:
@@ -173,4 +190,4 @@ if __name__ == '__main__':
         plot_age_elevation(kvargs.soure_path, kvargs.dest_path)
     if kvargs.tflag is True:
         print "Geotherma plot"
-        plot_temperature(kvargs.soure_path, kvargs.dest_path)
+        plot_temperature(kvargs.soure_path, kvargs.dest_path, kvargs.tmean)
