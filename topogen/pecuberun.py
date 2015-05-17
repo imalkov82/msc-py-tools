@@ -85,7 +85,7 @@ def genTopoFig(X,Y,Z):
     except Exception, e:
         print "Error in Fig Creation" 
 #--------------------------------------------------------------------------------------------------------------
-def writeToTopofname(data, ptxt):
+def write_topo_fname(data, ptxt):
     try:
         numpy.savetxt(ptxt, data.flatten(),fmt='%d')
     except Exception,e:
@@ -141,9 +141,9 @@ pecexe = {
 ############## Topography ######################################
 
 def zeroSurfe(xsize,ysize):
-    return genMGSurfe(xsize,ysize,lambda xi,yi: 0*xi + 0*yi)
+    return gen_mgsurf(xsize,ysize,lambda xi,yi: 0*xi + 0*yi)
 
-def genMGSurfe(xsize,ysize,foo):
+def gen_mgsurf(xsize,ysize,foo):
     x  = numpy.linspace(0, xsize, xsize)
     y  = numpy.linspace(0, ysize ,ysize)
     xi,yi = numpy.meshgrid(x,y)

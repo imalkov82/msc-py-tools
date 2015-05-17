@@ -1,9 +1,9 @@
 
-from PECUBE_RUN import *
+from pecuberun import *
 import numpy as np
 
 def zeroSurfe(xsize,ysize):
-    return genMGSurfe(mrow,mcol,lambda xi,yi: 0)
+    return gen_mgsurf(mrow,mcol,lambda xi,yi: 0)
 
 def genMGSurfe(xsize,ysize,foo):
     x  = np.linspace(0, xsize, xsize)
@@ -43,7 +43,7 @@ st0 = zeroSurfe(xsize,ysize)
 
 # ----------------------------------------------------------- #
 # CODE
-st1 = genMGSurfe(mrow,mcol,lambda xi,yi: 0)
+st1 = gen_mgsurf(mrow,mcol,lambda xi,yi: 0)
 
 # ----------------------------------------------------------- #
 # --------------------- 40 Ma Topography -------------------- #
@@ -57,11 +57,11 @@ st1 = genMGSurfe(mrow,mcol,lambda xi,yi: 0)
 
 #canyon slope
 
-zl = genMGSurfe(mrow / 2,mcol / 2,lambda xi,yi: 101 * np.tan(np.deg2rad(30)) * xi + 101 * np.tan(np.deg2rad(0.05)) * yi)
+zl = gen_mgsurf(mrow / 2,mcol / 2,lambda xi,yi: 101 * np.tan(np.deg2rad(30)) * xi + 101 * np.tan(np.deg2rad(0.05)) * yi)
 z = np.concatenate((np.fliplr(zl),zl),axis=1)
 z = np.hstack((z,np.zeros((z.shape[0],1))+fwmaxh)) #add column
 #escarpment
-st2 = genMGSurfe(mrow,fylocation,lambda xi,yi: 101 * np.tan(np.deg2rad(60)) * yi)
+st2 = gen_mgsurf(mrow,fylocation,lambda xi,yi: 101 * np.tan(np.deg2rad(60)) * yi)
 #final topography
 st2[z<st2] = z[z<st2]
 st2 = np.concatenate((np.zeros(st2.shape),st2),axis=0)
@@ -102,7 +102,7 @@ st0 = numpy.zeros((mrow,mcol))
 if(flwf == 0):
     im1 = ax1.imshow(st0.T, interpolation='none')
 elif(flwf == 1):
-    writeToTopofname(st0.T,maindir+'/step0.txt')
+    write_topo_fname(st0.T,maindir+'/step0.txt')
 else:
     pass
 # ----------------------------------------------------------- #
@@ -118,7 +118,7 @@ st1 = numpy.zeros((mrow,mcol))
 if(flwf == 0):
     im2 = ax2.imshow(st1.T, interpolation='none')
 elif flwf == 1:
-    writeToTopofname(st1.T,maindir+'/step1.txt')
+    write_topo_fname(st1.T,maindir+'/step1.txt')
 else:
     pass
 
@@ -163,7 +163,7 @@ st2 = np.concatenate((np.zeros(st2.shape),st2),axis=0)
 if(flwf == 0):
     im3 = ax3.imshow(st2, interpolation='none')
 elif flwf == 1:
-    writeToTopofname(st2,maindir+'/step2.txt')
+    write_topo_fname(st2,maindir+'/step2.txt')
 elif flwf == 2:
     plt.imshow(st2, interpolation='none')
 else:
@@ -209,7 +209,7 @@ st3 = np.concatenate((np.zeros(st3.shape),st3),axis=0)
 if(flwf == 0):
     im3 = ax3.imshow(st3, interpolation='none')
 elif flwf == 1:
-    writeToTopofname(st3,maindir+'/step3.txt')
+    write_topo_fname(st3,maindir+'/step3.txt')
 elif flwf == 2:
     plt.imshow(st3, interpolation='none')
 else:

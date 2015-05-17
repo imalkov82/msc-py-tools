@@ -98,10 +98,10 @@ def plot_age_elevation(src_path, dst_path):
         cols = ['ApatiteHeAge','Points:2', 'arc_length']
         frame1 = pnd.read_csv(ea, usecols = cols)
         if ea.find('riv') != -1:
-            pic_name = name_dst_file(ea, dst_path, '_riv.png')
+            pic_name = name_dst_file(ea, dst_path, '_riv_ea.png')
             df_res = df_ea_riv(frame1)
         else:
-            pic_name = name_dst_file(ea, dst_path, '_esc.png')
+            pic_name = name_dst_file(ea, dst_path, '_esc_ea.png')
             df_res = df_ea_esc(frame1)
         try:
             plot_ea(frame1, df_res, pic_name, uplift_from_fime_name(ea))
@@ -109,11 +109,14 @@ def plot_age_elevation(src_path, dst_path):
             print 'error in file={0}, error msg = {1}'.format(ea, e.message)
 
 ############### TEMPERATURE ###################################################
-def print_mean(fs, col_name_arr):
+def gen_geoth_mean(fs, col_name_arr, riv_type):
     res = []
     for tn in col_name_arr:
-        s = fs[fs[tn] == min(fs[tn])]['arc_length']
-        sm = s[s.index[:]].mean()
+        if riv_type is False:
+            sm = 10
+        else:
+            s = fs[fs[tn] == min(fs[tn])]['arc_length']
+            sm = s[s.index[:]].mean()
         res_fs = fs[(fs['arc_length'] >= (sm - abs(sm * 0.1))) & (fs['arc_length'] < (sm + abs(sm * 0.1)))]
         res.append(-1 * res_fs[tn].mean())
     return res
@@ -166,14 +169,17 @@ def plot_temperature(src_path, dst_path, mean_flag):
                 pic_name = name_dst_file(k, dst_path, '_esc_geot.png')
 
             # plt.savefig(pic_name)
-
-            if mean_flag is True and k.find('riv') != -1:
-                tl = ['{0}={1}'.format(tt,vv) for tt, vv in zip(leg_list, print_mean(fs, v))]
-                print '\t{0}: {1}'.format(os.path.split(pic_name)[1],','.join(list(reversed(tl))))
+            with open(os.path.join(os.getcwd(), 'geo_mean.txt'), 'a+') as f:
+                if mean_flag is True:
+                    riv_type = False
+                    if k.find('riv') != -1:
+                        riv_type = True
+                    tl = ['{0}={1}'.format(tt,vv) for tt, vv in zip(leg_list, gen_geoth_mean(fs, v, riv_type))]
+                    f.write('{0}: {1}\n'.format(os.path.split(pic_name)[1],','.join(list(reversed(tl)))))
 
 
         except Exception, e:
-            print 'error in file={0}, error msg = {1}'.format(v, e.message)
+            print 'error in file={0}, error msg = {1}'.format(k, e)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
