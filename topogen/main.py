@@ -4,6 +4,8 @@ import matplotlib.pylab as plt
 import os
 import session3 as s3
 import sessions2 as s2
+import pandas as pnd
+from peconfig import topo_data
 
 case01 = False
 case02 = False
@@ -39,3 +41,6 @@ if case02 is True:
 if case03 is True:
    root_path = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/'
    s2.save_ea_to_file(root_path)
+
+# print
+# topo_data.to_csv(os.path.join(os.getcwd(),'peconfig.csv'), index=False, header= False)

@@ -45,6 +45,7 @@ def surfcyn_gen_factory(mrow, mcol):
         return st2
     return surfcyn_gen
 
+######################################################################################################
 def create_bindir(path, symlinkdir):
     bin_path = os.path.join(path,'bin')
     os.mkdir(bin_path)
@@ -87,18 +88,18 @@ def gen_env(rootpath, binpath):
         print "fail to create dir: msg {0}".format(e.message)
 
 ###########################################################
-def main(bin_loc, tdata_start_index):
+def main(bin_loc, tdata_start_index, genv_flag):
     col, _ = topo_data.shape
 
-    for i in xrange(tdata_start_index, col):
+    for i in xrange(int(tdata_start_index), col):
         #cteate environment
         s = topo_data.ix[i]
         rootpath = s['execution_directory'].replace('~', os.environ['HOME'])
         print  'execute path = {0}'.format(rootpath)
         if os.path.isdir(rootpath) is False:
             os.mkdir(rootpath)
-
-        gen_env(rootpath,binpath = bin_loc)
+        if genv_flag is True:
+            gen_env(rootpath,binpath = bin_loc)
         # gen_env(rootpath,binpath = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1A/bin/')
 
         s = topo_data.ix[i]
@@ -108,13 +109,14 @@ def main(bin_loc, tdata_start_index):
         data_path = os.path.join(rootpath, 'data')
         for k, zs in enumerate(dir_surfs):
             write_topo_fname(zs,os.path.join(data_path,'step{0}.txt'.format(k)))
+            # print os.path.join(data_path,'step{0}.txt'.format(k))
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     #set rules
-    parser.add_argument( "-b", dest="bin_location", help="source directory")
-    parser.add_argument( "-s", dest="td_stast", help="topo data start index", default = 0)
-
+    parser.add_argument( "-b", dest="bin_location", help="source directory", default= '')
+    parser.add_argument( "-s", dest="td_start", help="topo data start index", default = 0)
+    parser.add_argument( "-g", action="store_true", dest="gen_env", help="generate environment flag", default=False)
     kvargs = parser.parse_args()
 
-    main(kvargs.bin_location, kvargs.td_start)
+    main(kvargs.bin_location, kvargs.td_start, kvargs.gen_env)
