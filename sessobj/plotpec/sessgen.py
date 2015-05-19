@@ -2,7 +2,7 @@ __author__ = 'imalkov'
 import numpy as np
 import os
 from argparse import ArgumentParser
-from peconfig import topo_data
+from peconfig import wrk_data
 import shutil
 import datetime
 
@@ -88,24 +88,26 @@ def gen_env(rootpath, binpath):
         print "fail to create dir: msg {0}".format(e.message)
 
 ###########################################################
-def main(bin_loc, tdata_start_index, tdata_end_index, genv_flag, cyn_flag, disp_path):
-    col, _ = topo_data.shape
+def main(bin_loc, genv_flag, cyn_flag, disp_path):
 
-    for i in xrange(int(tdata_start_index), min(col, int(tdata_end_index))):
+    col, _ = wrk_data.shape
+
+    for i in xrange(col):
         #cteate environment
-        s = topo_data.ix[i]
+        s = wrk_data.ix[i]
         rootpath = s['execution_directory'].replace('~', os.environ['HOME'])
         print  'execute path = {0}'.format(rootpath)
         if disp_path is True:
             continue
 
         if os.path.isdir(rootpath) is False:
+            print 'create dir:{0}'.format(rootpath)
             os.mkdir(rootpath)
         if genv_flag is True:
+            print 'create environment:{0}'.format(rootpath)
             gen_env(rootpath,binpath = bin_loc)
         # gen_env(rootpath,binpath = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/Session1A/bin/')
 
-        s = topo_data.ix[i]
         if cyn_flag is True:
             print 'generate topography with canyon'
             zs_func = surfcyn_gen_factory(s['row_num'],s['col_num'])
@@ -115,6 +117,7 @@ def main(bin_loc, tdata_start_index, tdata_end_index, genv_flag, cyn_flag, disp_
         dir_surfs = [zs_func(s['step{0}'.format(j)] * np.sin(np.deg2rad(60)), gen_mgsurf) for j in xrange(3)]
 
         data_path = os.path.join(rootpath, 'data')
+        print 'write topography to file'
         for k, zs in enumerate(dir_surfs):
             write_topo_fname(zs,os.path.join(data_path,'step{0}.txt'.format(k)))
 
@@ -122,11 +125,9 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     #set rules
     parser.add_argument( "-b", dest="bin_location", help="source directory", default= '')
-    parser.add_argument( "-s", dest="td_start", help="topo data start index", default = 0)
-    parser.add_argument( "-e", dest="td_end", help="topo data end index", default = 100000000)
     parser.add_argument( "-g", action="store_true", dest="gen_env", help="generate environment flag", default=False)
     parser.add_argument( "-c", action="store_true", dest="cyn_flag", help="generate environment flag", default=False)
     parser.add_argument( "-p", action="store_true", dest="disp_path", help="display path", default=False)
     kvargs = parser.parse_args()
 
-    main(kvargs.bin_location, kvargs.td_start, kvargs.td_end, kvargs.gen_env, kvargs.cyn_flag, kvargs.disp_path)
+    main(kvargs.bin_location, kvargs.gen_env, kvargs.cyn_flag, kvargs.disp_path)

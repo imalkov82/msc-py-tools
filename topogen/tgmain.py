@@ -10,6 +10,7 @@ from peconfig import topo_data
 case01 = False
 case02 = False
 case03 = False
+case04 = False
 
 if case01 is True:
     txs = []
@@ -41,6 +42,23 @@ if case02 is True:
 if case03 is True:
    root_path = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/'
    s2.save_ea_to_file(root_path)
+
+if case04 is True:
+    arr = []
+    name = 'fault_parameters.txt'
+    root_dir = '/home/imalkov/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02122'
+    for dirpath, dirname, filename in os.walk(root_dir):
+        for f in filename:
+            if f == name:
+                print os.path.join(dirpath, f)
+                newlines = []
+                with open(os.path.join(dirpath, f),'r') as my_file:
+                    for line in my_file.readlines():
+                        newlines.append(line.replace('41.6', '47.3'))
+
+                with open(os.path.join(dirpath, f), 'w') as my_file:
+                    for line in newlines:
+                        my_file.write(line)
 
 # print
 # topo_data.to_csv(os.path.join(os.getcwd(),'peconfig.csv'), index=False, header= False)

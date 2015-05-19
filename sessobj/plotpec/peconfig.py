@@ -27,36 +27,42 @@ import os
 #                     ]
 #         }
 
-topo_data = pnd.read_csv(os.path.join(os.getcwd(),'../../topogen/peconfig.csv'), names = ['execution_directory','col_num','row_num','step0','step1','step2'])
+# topo_data = pnd.read_csv(os.path.join(os.getcwd(),'../../topogen/peconfig.csv'), names = ['execution_directory','col_num','row_num','step0','step1','step2'])
+main_dir = '{0}/Dropbox/M.s/Research/DATA/SESSION_TREE/'.format(os.environ['HOME'])
+# topo_data = pnd.read_csv('{0}/Dropbox/M.s/Research/DOCS/peconfig.csv'.format(os.environ['HOME']), names = ['execution_directory','col_num','row_num','step0','step1','step2', 'status'])
+topo_data = pnd.read_csv('{0}/Dropbox/M.s/Research/DOCS/peconfig.csv'.format(os.environ['HOME']), names = ['execution_directory','col_num','row_num','step0','step1','step2', 'status'])
+wrk_data = topo_data[topo_data['status'] == 0]
+wrk_data['execution_directory'] = work_data['execution_directory'].apply(lambda x : x.replace('~', os.environ['HOME']))
+# wrk_list = [p for i,p in work_data['execution_directory'].iteritems()]
 
-indxs = [
-    'run',
-    'topofname',
-    'nx0', 'ny0',
-    'dlon', 'dlat',
-    'nskip',
-    'lon0', 'lat0',
-    'nstep',
-    'tau',
-    't_2', 'a_2', 'o_2', 'io_2',
-    't_1', 'a_1', 'o_1', 'io_1',
-    't_0', 'a_0', 'o_0', 'io_0',
-    'f0', 'rc', 'rm', 'E', 'n', 'L', 'nx', 'ny',
-    'zl', 'nz', 'k', 'tb', 'tt', 'la', 'pr',
-    'agefnme',
-    'file_dir']
-
-
-failt_2_2 = [
-'nfault',
-'x1','y1','x2','y2',
-'n_0',
-'ri_0','si_0',
-'ri_1','si_1',
-'nstep_0',
-'tstart_0','tend_0','velo_0',
-'nstep_1',
-'tstart_1','tend_1','velo_1']
+# indxs = [
+#     'run',
+#     'topofname',
+#     'nx0', 'ny0',
+#     'dlon', 'dlat',
+#     'nskip',
+#     'lon0', 'lat0',
+#     'nstep',
+#     'tau',
+#     't_2', 'a_2', 'o_2', 'io_2',
+#     't_1', 'a_1', 'o_1', 'io_1',
+#     't_0', 'a_0', 'o_0', 'io_0',
+#     'f0', 'rc', 'rm', 'E', 'n', 'L', 'nx', 'ny',
+#     'zl', 'nz', 'k', 'tb', 'tt', 'la', 'pr',
+#     'agefnme',
+#     'file_dir']
+#
+#
+# failt_2_2 = [
+# 'nfault',
+# 'x1','y1','x2','y2',
+# 'n_0',
+# 'ri_0','si_0',
+# 'ri_1','si_1',
+# 'nstep_0',
+# 'tstart_0','tend_0','velo_0',
+# 'nstep_1',
+# 'tstart_1','tend_1','velo_1']
 
 # homedir = '{0}/Dropbox/M.s/Research/DATA/SESSION_TREE/NODE02/'.format(os.environ['HOME'])
 #
