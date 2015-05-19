@@ -36,7 +36,7 @@ def surfcyn_gen_factory(mrow, mcol):
         st2[st2 > fw_max] = fw_max # footwall maximum height (4 km = 4000 m)
         return st2
     return surfcyn_gen
-
+############################################################################################################################
 def create_bindir(path, symlinkdir):
     bin_path = os.path.join(path,'bin')
     os.mkdir(bin_path)
@@ -79,7 +79,6 @@ def gen_env(rootpath, binpath):
         create_vtkdir(rootpath)
     except Exception, e:
         print "fail to create dir: msg {0}".format(e.message)
-
 
 #-------------------------------------------------------------------
 #--------------- topo generation -----------------------------------
