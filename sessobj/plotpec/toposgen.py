@@ -2,7 +2,7 @@ __author__ = 'imalkov'
 import numpy as np
 import os
 from argparse import ArgumentParser
-from peconfig import wrk_data
+import pandas as pnd
 import shutil
 import datetime
 
@@ -16,7 +16,7 @@ def gen_mgsurf(xsize,ysize,foo):
 def write_topo_fname(data, ptxt):
     try:
         np.savetxt(ptxt, data.flatten(),fmt='%d')
-    except Exception,e:
+    except Exception, e:
         print "Error in Print" + str(e)
 
 ###########################################################
@@ -90,11 +90,17 @@ def gen_env(rootpath, binpath):
 ###########################################################
 def main(bin_loc, genv_flag, cyn_flag, disp_path):
 
-    col, _ = wrk_data.shape
+    # main_dir = '{0}/Dropbox/M.s/Research/DATA/SESSION_TREE/'.format(os.environ['HOME'])
+    topo_data = pnd.read_csv('{0}/Dropbox/M.s/Research/DOCS/peconfig.csv'.format(os.environ['HOME']), names = ['execution_directory','col_num','row_num','step0','step1','step2', 'env', 'test', 'pecube'])
+    wrk_data = topo_data[topo_data['env'] == 0]
+    wrk_data['execution_directory'] = wrk_data['execution_directory'].apply(lambda x : x.replace('~', os.environ['HOME']))
 
-    for i in xrange(col):
+    # col, _ = wrk_data.shape
+
+    # for i in xrange(col):
+    for ind, s in wrk_data.iterrows():
         #cteate environment
-        s = wrk_data.ix[i]
+        # s = wrk_data.ix[i]
         rootpath = s['execution_directory'].replace('~', os.environ['HOME'])
         print  'execute path = {0}'.format(rootpath)
         if disp_path is True:
@@ -120,13 +126,13 @@ def main(bin_loc, genv_flag, cyn_flag, disp_path):
         print 'write topography to file'
         for k, zs in enumerate(dir_surfs):
             write_topo_fname(zs,os.path.join(data_path,'step{0}.txt'.format(k)))
-
+#######################################################################################
 if __name__ == '__main__':
     parser = ArgumentParser()
     #set rules
-    parser.add_argument( "-b", dest="bin_location", help="source directory", default= '')
+    parser.add_argument( "-l", dest="bin_location", help="source directory", default= '')
     parser.add_argument( "-g", action="store_true", dest="gen_env", help="generate environment flag", default=False)
-    parser.add_argument( "-c", action="store_true", dest="cyn_flag", help="generate environment flag", default=False)
+    parser.add_argument( "-c", action="store_true", dest="cyn_flag", help="generate 3D geomery (default is 2D)", default=False)
     parser.add_argument( "-p", action="store_true", dest="disp_path", help="display path", default=False)
     kvargs = parser.parse_args()
 
